@@ -1,6 +1,6 @@
 ## Description
-MODELO DE REGRESIÓN SIMBÓLICA PARA PRONÓSTICAR EL PRECIO DE LOS INSTRUMENTOS DEL USD/MXN (DIVISA) Y
-EL INDICADOR DOW JONES INDUSTRIAL (DJIA). UTILIZANDO VARIABLES ENDÓGENAS Y ALGUNAS TRANSFORMACIONES ESTADÍSTICAS.
+Modelo de regresión simbólica para pronósticar el precio de los instrumentos del USD/MXN (DIVISA) y
+el Indicador Dow Jones Industrial (DJIA). Utilizando variables endógenas y algunas transformaciones estadísticas.
 
 ## Install dependencies
 
