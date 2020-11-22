@@ -1,7 +1,7 @@
 
 """
 # -- --------------------------------------------------------------------------------------------------- -- #
-# -- project: A SHORT DESCRIPTION OF THE PROJECT                                                         -- #
+# -- project: PROYECTO FINAL DE LA CLASE DE TRADING                                                   -- #
 # -- script: data.py : python script for data collection                                                 -- #
 # -- author: YOUR GITHUB USER NAME                                                                       -- #
 # -- license: GPL-3.0 License                                                                            -- #
