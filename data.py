@@ -17,6 +17,7 @@ Funcion para descargar los datos históricos de OANDA.
 - Checar data_oanda.py
 '''
 
+
 def download(instrument, f_inicio = '2009-01-01', f_fin = '2020-11-01', freq = 'D'):
     # Download prices from Oanda into df_pe
     instrumento = instrument
@@ -44,10 +45,12 @@ los históricos en formato pkl
 + save_pkl('US30_USD')
 '''
 
+
 def save_pkl(ticker):
     data_df = download(str(ticker))
     data_df.to_pickle('./files/1' + str(ticker) + '.pkl')
     return
+
 
 def read_pkl(name):
     return pd.read_pickle('./files/' + str(name) + '.pkl')
@@ -56,6 +59,7 @@ def read_pkl(name):
 '''--------------------------------------------------------------
 Funciones de manejo de datos.
 '''
+
 
 def getReturns(data):
     """
