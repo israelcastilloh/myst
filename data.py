@@ -9,12 +9,56 @@
 # -- --------------------------------------------------------------------------------------------------- -- #
 """
 
-import requests
+import data_oanda
 import pandas as pd
-from oanda_handler import *
 
-'''python
-Estas son las credenciales de la cuenta de la cuenta de Israel
+'''--------------------------------------------------------------
+Funcion para descargar los datos históricos de OANDA.
+- Checar data_oanda.py
 '''
-account_id = '2571305'
-access_token = '4d5aad4aa2939a132fe264df7592d9ab-6a99aceb020a93917af53376dbb1a8d5'
+
+def download(instrument, f_inicio = '2009-01-01', f_fin = '2020-11-01', freq = 'D'):
+    # Download prices from Oanda into df_pe
+    instrumento = instrument
+
+    f_inicio = pd.to_datetime(f_inicio+' 17:00:00').tz_localize('GMT')
+    f_fin = pd.to_datetime(f_fin+' 17:00:00').tz_localize('GMT')
+
+    token = data_oanda.access_token
+
+    df_pe = data_oanda.getPrices(p0_fini=f_inicio, p1_ffin=f_fin, p2_gran = freq,
+                           p3_inst = instrumento, p4_oatk = token, p5_ginc = 4900)
+    df_pe = df_pe.set_index('TimeStamp') #set index to date
+
+    df_pe = pd.DataFrame(df_pe.values.astype(float),
+                         columns = df_pe.columns,
+                         index = df_pe.index)
+    return df_pe
+
+
+'''--------------------------------------------------------------
+Funciones para guardar y leer
+los históricos en formato pkl
+'''
+
+def save_pkl(data_df, name):
+    data_df.to_pickle('./files/' + name + '.pkl')
+    return
+
+def read_pkl(name):
+    return pd.read_pickle('./files/' + name + '.pkl')
+
+#save_pkl(download('USD_MXN'), 'USD_MXN')
+
+#save_pkl(download('US30_USD'), 'US30_USD')
+
+
+'''--------------------------------------------------------------
+Funciones de manejo de datos.
+'''
+
+def getReturns(data):
+    """
+    :param data: pandas dataframe containing OHLC prices
+    """
+    return np.log(data / data.shift(1)).iloc[1:]
