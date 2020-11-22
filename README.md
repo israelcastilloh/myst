@@ -11,11 +11,16 @@ Install all the dependencies stated in the requirements.txt file, just run the f
 Or you can manually install one by one using the name and version in the file.
 
 ## Funcionalities
-
+'''python
+Hello, world!
+'''
 *Add here examples of core functionalities for the project in this repository.*
 
 ## Author
-*Add Name and a brief description on who you are.*
+Araceli Castillo Fuhr. ING. FINANCIERO
+Israel Castillo Herrera. ING. FINANCIERO
+Francisco Enriquez Muñoz. ING. FINANCIERO
+Diana Laura Ramírez Hinojosa. ING. FINANCIERO
 
 ## License
 **GNU General Public License v3.0**
