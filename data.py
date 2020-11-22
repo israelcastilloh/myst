@@ -15,7 +15,3 @@ from oanda_handler import *
 
 account_id = '2571305'
 access_token = '4d5aad4aa2939a132fe264df7592d9ab-6a99aceb020a93917af53376dbb1a8d5'
-
-conn = API('practice', access_token, account_id)
-conn = conn.get_instruments()
-print(conn)
