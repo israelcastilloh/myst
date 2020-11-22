@@ -11,10 +11,9 @@
 
 from data import *
 
-# Historicos de la divisa --> USD/MXN
-datos_divisa = read_pkl('USD_MXN')
-print(datos_divisa)
+'''--------------------------------------------------------------
+Datos históricos de divisa e índice
+'''
 
-# Historicos del índice --> US30_USD - US Wall St. 30
-datos_indice = read_pkl('US30_USD')
-print(datos_indice)
+datos_divisa = read_pkl('USD_MXN') # 4HRS --> USD/MXN - Mexican Peso
+datos_indice = read_pkl('US30_USD') # 4HRS --> US30_USD - US Wall St. 30

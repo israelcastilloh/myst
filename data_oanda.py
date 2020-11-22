@@ -186,9 +186,6 @@ def setTag(data):
 #     general = pd.read_json(response.text)
 #     general = general.instruments.apply(pd.Series)
 #     return general
-#
-#
-#
 # instruments = api()
 # for instrument in instruments.displayName:
 #     print(instrument)

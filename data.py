@@ -39,18 +39,18 @@ def download(instrument, f_inicio = '2009-01-01', f_fin = '2020-11-01', freq = '
 '''--------------------------------------------------------------
 Funciones para guardar y leer
 los históricos en formato pkl
+
++ save_pkl('USD_MXN')
++ save_pkl('US30_USD')
 '''
 
-def save_pkl(data_df, name):
-    data_df.to_pickle('./files/' + name + '.pkl')
+def save_pkl(ticker):
+    data_df = download(str(ticker))
+    data_df.to_pickle('./files/1' + str(ticker) + '.pkl')
     return
 
 def read_pkl(name):
-    return pd.read_pickle('./files/' + name + '.pkl')
-
-#save_pkl(download('USD_MXN'), 'USD_MXN')
-
-#save_pkl(download('US30_USD'), 'US30_USD')
+    return pd.read_pickle('./files/' + str(name) + '.pkl')
 
 
 '''--------------------------------------------------------------
