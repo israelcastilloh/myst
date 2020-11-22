@@ -1,5 +1,5 @@
 ## Description
-### Modelo de Predicción de Precios Mediante Regresión Simbólica - USD/MXN y Dow Jones Industrial Index. 
+### Modelo de Predicción de Precios Mediante Regresión Simbólica - USD/MXN y Dow Jones Industrial Index.
 
 Modelo de regresión simbólica para pronósticar el precio de los instrumentos del USD/MXN (DIVISA) y
 el Indicador Dow Jones Industrial (DJIA). Utilizando variables endógenas y algunas transformaciones estadísticas.
