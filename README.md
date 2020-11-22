@@ -1,4 +1,6 @@
 ## Description
+### Modelo de Predicción de Precios Mediante Regresión Simbólica - USD/MXN y Dow Jones Industrial Index. 
+
 Modelo de regresión simbólica para pronósticar el precio de los instrumentos del USD/MXN (DIVISA) y
 el Indicador Dow Jones Industrial (DJIA). Utilizando variables endógenas y algunas transformaciones estadísticas.
 
@@ -11,15 +13,16 @@ Install all the dependencies stated in the requirements.txt file, just run the f
 Or you can manually install one by one using the name and version in the file.
 
 ## Funcionalities
-'''python
-Hello, world!
-'''
+
 *Add here examples of core functionalities for the project in this repository.*
 
 ## Author
 Araceli Castillo Fuhr. ING. FINANCIERO
+
 Israel Castillo Herrera. ING. FINANCIERO
+
 Francisco Enriquez Muñoz. ING. FINANCIERO
+
 Diana Laura Ramírez Hinojosa. ING. FINANCIERO
 
 ## License
