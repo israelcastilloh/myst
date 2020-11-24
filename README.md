@@ -1,7 +1,7 @@
 ## Description
 ### Modelo de Predicción de Precios Mediante Regresión Simbólica - USD/MXN.
 
-Modelo de regresión simbólica para pronósticar el precio de los instrumentos del USD/MXN (Divisa). Utilizando variables endógenas y algunas transformaciones estadísticas.
+Modelo de regresión simbólica para pronósticar el precio del instrumento USD/MXN (Divisa). Utilizando variables endógenas y algunas transformaciones estadísticas.
 
 ## Install dependencies
 
