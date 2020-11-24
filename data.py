@@ -55,6 +55,7 @@ def save_pkl(ticker):
 def read_pkl(name):
     return pd.read_pickle('./files/' + str(name) + '.pkl')
 
+
 '''--------------------------------------------------------------
 Funciones de manejo de datos.
 '''

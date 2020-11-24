@@ -13,3 +13,4 @@ jupyter>=1.0.0
 statsmodels>=v0.12.1
 oandapyV20 >= 0.6.3
 requests >= 2.24.0
+SciPy >= 1.5.4
