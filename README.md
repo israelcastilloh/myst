@@ -1,14 +1,13 @@
 ## Description
-### Modelo de Predicción de Precios Mediante Regresión Simbólica - USD/MXN y US Wall St 30 Index.
+### Modelo de Predicción de Precios Mediante Regresión Simbólica - USD/MXN.
 
-Modelo de regresión simbólica para pronósticar el precio de los instrumentos del USD/MXN (DIVISA) y
-el Indicador US Wall St. 30. Utilizando variables endógenas y algunas transformaciones estadísticas.
+Modelo de regresión simbólica para pronósticar el precio de los instrumentos del USD/MXN (Divisa). Utilizando variables endógenas y algunas transformaciones estadísticas.
 
 ## Install dependencies
 
 Install all the dependencies stated in the requirements.txt file, just run the following command in terminal:
 
-        pip install -r requirements.txt
+        pip3 install -r requirements.txt
 
 Or you can manually install one by one using the name and version in the file.
 
