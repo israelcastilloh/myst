@@ -16,6 +16,7 @@ from statsmodels.stats.diagnostic import het_arch
 import pandas as pd
 from visualizations import *
 from data import *
+pd.options.mode.use_inf_as_na = True
 
 # -- ASPECTOS ESTADISTICOS ------------------------------------------------------------------------------------------ #
 # -- ---------------------------------------------------------------------------------------------------------------- #
@@ -255,3 +256,174 @@ def get_dfestadisticos(lista1, lista2, lista3, lista4):
 
 
 df_estadisticos = get_dfestadisticos(lista1, lista2, lista3, lista4)
+
+
+## Technical Indicators
+
+def CCI(data, ndays):
+    '''
+    Commodity Channel Index
+    Parameters
+    ----------
+    data : pd.DataFrame with 3 colums named High, Low and Close
+    ndays : int used for moving average and moving std
+    Returns
+    -------
+    CCI : pd.Series containing the CCI
+    '''
+    TP = (data['High'] + data['Low'] + data['Close']) / 3
+    CCI = pd.Series((TP - TP.rolling(ndays).mean()) /
+                    (0.015 * TP.rolling(ndays).std()), name='CCI')
+    return CCI
+
+
+def SMA(data, ndays):
+    '''Simple Moving Average'''
+    SMA = pd.Series(data['Close'].rolling(ndays).mean(), name='SMA')
+    return SMA
+
+def BBANDS(data, window):
+    ''' Bollinger Bands '''
+    MA = data.Close.rolling(window).mean()
+    SD = data.Close.rolling(window).std()
+    return MA + (2 * SD), MA - (2 * SD)
+
+def RSI(data, window):
+    ''' Relative Strnegth Index'''
+    delta = data['Close'].diff().dropna()
+    up, down = delta.copy(), delta.copy()
+    up[up < 0] = 0
+    down[down > 0] = 0
+    roll_up1 = up.ewm(span=window).mean()
+    roll_down1 = down.abs().ewm(span=window).mean()
+    RS1 = roll_up1 / roll_down1
+    return 100.0 - (100.0 / (1.0 + RS1))
+
+
+def price_from_max(data, window):
+    return data['Close'] / data['Close'].rolling(window).max()
+
+
+def price_from_min(data, window):
+    return data['Close'] / data['Close'].rolling(window).min() - 1
+
+def price_range(data, window):
+    pricerange = (data['Close'] - data['Close'].rolling(window).min()) / \
+                 (data['Close'].rolling(window).max() - data['Close'].rolling(window).min())
+    return pricerange
+
+# %% Labeling: 1 for positive next day return, 0 for negative next day return
+def next_day_ret(df):
+    '''
+    Given a DataFrame with one column named 'Close' label each row according to
+    the next day's return. If it is positive, label is 1. If negative, label is 0
+    Designed to label a dataset used to train a ML model for trading
+    RETURNS
+    next_day_ret: pd.DataFrame
+    label: list
+    Implementation on df_pe:
+        _, label = next_day_ret(df_pe)
+        df_pe['Label'] = label
+    '''
+    next_day_ret = df.Close.pct_change().shift(-1)
+    label = []
+    for i in range(len(next_day_ret)):
+        if next_day_ret[i] > 0:
+            label.append(1)
+        else:
+            label.append(0)
+    return next_day_ret, label
+
+
+# %%
+# binary ,returns and accum returns
+
+def ret_div(df):
+    '''
+    Return a logarithm and arithmetic daily returns
+    and daily acum daily
+    '''
+    ret_ar = df.Close.pct_change().fillna(0)
+    ret_ar_acum = ret_ar.cumsum()
+    ret_log = np.log(1 + ret_ar_acum).diff()
+    ret_log_acum = ret_log.cumsum()
+
+    binary = ret_ar
+    binary[binary < 0] = 0
+    binary[binary > 0] = 1
+    return ret_ar, ret_ar_acum, ret_log, ret_log_acum, binary
+
+# zscore normalization
+
+def z_score(df):
+    # zscore
+    mean, std = df.Close.mean(), df.Close.std()
+    zscore = (df.Close - mean) / std
+
+    return zscore
+
+# diff integer
+def int_diff(df, window: np.arange):
+    diff = [
+        df.Close.diff(x) for x in window
+    ]
+    return diff
+
+# moving averages
+def mov_averages(df, space: np.arange):
+    mov_av = [
+        df.Close.rolling(w).mean() for w in space
+    ]
+    return mov_av
+
+
+def quartiles(df, n_bins: int):
+    'Assign quartiles to data, depending of position'
+    bin_fxn = pd.qcut(df.Close, q=n_bins, labels=range(1, n_bins + 1))
+    return bin_fxn
+
+
+
+def add_all_features(datos_divisa):
+    # Technical Indicators
+    datos_divisa['CCI'] = CCI(datos_divisa, 14)  # Add CCI
+    datos_divisa['SMA_5'] = SMA(datos_divisa, 5)
+    datos_divisa['SMA_10'] = SMA(datos_divisa, 10)
+    datos_divisa['MACD'] = datos_divisa['SMA_10'] - datos_divisa['SMA_5']
+    datos_divisa['Upper_BB'], datos_divisa['Lower_BB'] = BBANDS(datos_divisa, 10)
+    datos_divisa['Range_BB'] = (datos_divisa['Close'] - datos_divisa['Lower_BB']) / (datos_divisa['Upper_BB'] - datos_divisa['Lower_BB'])
+    datos_divisa['RSI'] = RSI(datos_divisa, 10)
+    datos_divisa['Max_range'] = price_from_max(datos_divisa, 20)
+    datos_divisa['Min_range'] = price_from_min(datos_divisa, 20)
+    datos_divisa['Price_Range'] = price_range(datos_divisa, 50)
+    datos_divisa['returna'], datos_divisa['returna_acums'], datos_divisa['returnlog'], datos_divisa['returnlog_acum'], datos_divisa['binary'] = ret_div(datos_divisa)
+    datos_divisa['zscore'] = z_score(datos_divisa)
+    datos_divisa['diff1'], datos_divisa['diff2'], datos_divisa['diff3'], datos_divisa['diff4'], datos_divisa['diff5'] = int_diff(datos_divisa, np.arange(1,6))
+    datos_divisa['mova1'], datos_divisa['movaf2'], datos_divisa['mova3'], datos_divisa['mova4'], datos_divisa['mova5'] = mov_averages(datos_divisa,np.arange(1,6))
+    datos_divisa['quartiles'] = quartiles(datos_divisa, 10)
+    return datos_divisa
+
+def math_transformations(df):
+    original_columns = df.columns
+    for col in original_columns:
+        df['sin_'+col] = np.sin(df[col].values.astype(float))
+        df['cos_'+col] = np.cos(df[col].values.astype(float))
+        df['square_'+col] = np.square(df[col].values.astype(float))
+        df['sqrt_'+col] = np.sqrt(df[col].values.astype(float))
+        df['exp_'+col] = np.exp(df[col].values.astype(float))
+        df['exp2_'+col] = np.exp2(df[col].values.astype(float))
+        df['tanh_'+col] = np.tanh(df[col].values.astype(float))
+        df['arctan_'+col] = np.arctan(df[col].values.astype(float))
+        df['log_'+col] = np.log(df[col].values.astype(float))
+        df['log2_'+col] = np.log2(df[col].values.astype(float))
+        df['log10_'+col] = np.log10(df[col].values.astype(float))
+        df['sindiff_' + col] = np.sin(df[col].values.astype(float))**(1/2)
+        df['cosdiff_' + col] = np.cos(df[col].values.astype(float))**(1/2)
+        df['squarediff_' + col] = np.square(df[col].values.astype(float))**(1/2)
+        df['sqrtdiff_' + col] = np.sqrt(df[col].values.astype(float))**(1/2)
+        df['tanhdiff_' + col] = np.tanh(df[col].values.astype(float))**(1/2)
+        df['arctandiff_' + col] = np.arctan(df[col].values.astype(float))**(1/2)
+        df['logdiff_' + col] = np.log(df[col].values.astype(float))**(1/2)
+        df['log2diff_' + col] = np.log2(df[col].values.astype(float))**(1/2)
+        df['log10diff_' + col] = np.log10(df[col].values.astype(float))**(1/2)
+    return df

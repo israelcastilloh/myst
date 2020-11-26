@@ -36,3 +36,11 @@ Aspectos estadisticos de la serie de tiempo
 
 estadisticos = ft.df_estadisticos
 # -- ---------------------------------------------------------------------------------------------------------------- #
+#%%
+'''crear variables artificiales - indicadores financieros y estadísticos'''
+datos_divisa = ft.add_all_features(datos_divisa)
+
+#%%
+'''crear variables artificiales - transformaciones matemáticas y change point'''
+datos_divisa = ft.math_transformations(datos_divisa)
+
