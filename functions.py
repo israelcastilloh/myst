@@ -322,7 +322,7 @@ def next_day_ret(df):
         _, label = next_day_ret(df_pe)
         df_pe['Label'] = label
     '''
-    next_day_ret = df.Close.pct_change().shift(-1)
+    next_day_ret = df.Open.pct_change().shift(-1)
     label = []
     for i in range(len(next_day_ret)):
         if next_day_ret[i] > 0:
@@ -401,7 +401,7 @@ def add_all_features(datos_divisa):
     datos_divisa['mova1'], datos_divisa['movaf2'], datos_divisa['mova3'], datos_divisa['mova4'], datos_divisa['mova5'] = mov_averages(datos_divisa,np.arange(1,6))
     datos_divisa['quartiles'] = quartiles(datos_divisa, 10)
     datos_divisa['Label'] = next_day_ret(datos_divisa)[1]
-    return datos_divisa
+    return datos_divisa.iloc[1:]
 
 
 def math_transformations(df):
