@@ -10,6 +10,7 @@
 """
 
 import functions as ft
+import visualizations as vs
 from data import *
 
 # -- ---------------------------------------------------------------------------------------------------------------- #
@@ -17,9 +18,9 @@ from data import *
 Datos históricos de divisa
 '''
 
-#save_pkl('USD_MXN')
+# save_pkl('USD_MXN')
 datos_divisa = read_pkl('USD_MXN')  # 4HRS --> USD/MXN - Mexican Peso
-#print(datos_divisa)
+# print(datos_divisa)
 
 # -- ---------------------------------------------------------------------------------------------------------------- #
 '''--------------------------------------------------------------
@@ -34,13 +35,24 @@ train = datos_divisa['01-01-2019':]
 Aspectos estadisticos de la serie de tiempo 
 '''
 
-estadisticos = ft.df_estadisticos
+ciclos = ft.check_seasonal(train)  # Matriz que muestra los ciclos que se repiten
+# Obtener la gráfica de atípicos
+vs.get_atipicos(train)
+# Calcular los valores necesarios para el análisis estadístico
+estacionaridad, autocorrelacion, normalidad, seasonal = ft.get_statistics(train)
+# Obtener DataFrame con resultados
+estadisticos = ft.get_dfestadisticos(estacionaridad, autocorrelacion, normalidad, seasonal)
+
 # -- ---------------------------------------------------------------------------------------------------------------- #
-#%%
-'''crear variables artificiales - indicadores financieros y estadísticos'''
+'''--------------------------------------------------------------
+Crear variables artificiales - indicadores financieros y estadísticos
+'''
+
 datos_divisa = ft.add_all_features(datos_divisa)
 
-#%%
-'''crear variables artificiales - transformaciones matemáticas y change point'''
+'''--------------------------------------------------------------
+crear variables artificiales - transformaciones matemáticas y change point
+'''
+
 datos_divisa = ft.math_transformations(datos_divisa)
 

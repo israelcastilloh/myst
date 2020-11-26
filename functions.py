@@ -19,12 +19,6 @@ from data import *
 pd.options.mode.use_inf_as_na = True
 
 # -- ASPECTOS ESTADISTICOS ------------------------------------------------------------------------------------------ #
-# -- ---------------------------------------------------------------------------------------------------------------- #
-# Datos necesarios
-save_pkl('USD_MXN')
-datos_divisa = read_pkl('USD_MXN')
-test = datos_divisa[:'01-01-2019']
-train = datos_divisa['01-01-2019':]
 
 # -- ---------------------------------------------------------------------------------------------------------------- #
 # Verficar estacionaridad de una serie de datos
@@ -72,12 +66,6 @@ def check_stationarity(param_data):
                 param_data = new_data
     return stationary_s, lags
 
-
-stationary_series, lags = check_stationarity(train)
-if lags != 0:
-    estacionaridad = 'No'
-else:
-    estacionaridad = 'Sí'
 # -- ---------------------------------------------------------------------------------------------------------------- #
 # Componente de autocorrelacion y autocorrelacion parcial
 
@@ -145,13 +133,6 @@ def f_autocorrelation(param_data):
     q = significant_lag(q_s)
     return p, q
 
-
-p, q = f_autocorrelation(train)
-if p and q != 0:
-    autocorrelacion = 'Existen rezagos significativos'
-else:
-    autocorrelacion = 'No existen rezagos significativos'
-
 # -- ---------------------------------------------------------------------------------------------------------------- #
 # Prueba de normalidad de los datos
 
@@ -180,35 +161,23 @@ def check_noramlity(param_data):
     norm = True if normalidad[1] > alpha else False
     return norm
 
-
-norm = check_noramlity(train)
-if norm:
-    normalidad = 'Los datos son normales'
-else:
-    normalidad = 'Los datos no son normales'
-
-
 # -- ---------------------------------------------------------------------------------------------------------------- #
 # Prueba de estacionalidad de la serie de tiempo
 
 
-def check_seasonal(a=False):
-    if a:
-        f, pxx_den = get_periodogram(True)
-        top_50_periods = {}
-        # get indices for 3 highest Pxx values
-        top50_freq_indices = np.flip(np.argsort(pxx_den), 0)[3:50]
+def check_seasonal(data):
+    f, pxx_den = get_periodogram(data)
+    top_50_periods = {}
+    # get indices for 3 highest Pxx values
+    top50_freq_indices = np.flip(np.argsort(pxx_den), 0)[3:6]
 
-        freqs = f[top50_freq_indices]
-        power = pxx_den[top50_freq_indices]
-        periods = 1 / np.array(freqs)
-        matrix = pd.DataFrame(columns=["power", "periods"])
-        matrix.power = power
-        matrix.periods = periods
-        print(matrix)
-
-# -- ---------------------------------------------------------------------------------------------------------------- #
-# Deteccion de datos atipicos
+    freqs = f[top50_freq_indices]
+    power = pxx_den[top50_freq_indices]
+    periods = 1 / np.array(freqs)
+    matrix = pd.DataFrame(columns=["power", "periods"])
+    matrix.power = power
+    matrix.periods = periods
+    return matrix
 
 # -- ---------------------------------------------------------------------------------------------------------------- #
 # Prueba de heterodasticidad de los residuos
@@ -236,16 +205,41 @@ def check_hetero(param_data):
     return heter
 
 # -- ---------------------------------------------------------------------------------------------------------------- #
+# Funcion que corre las pruebas estadisticas
+
+
+def get_statistics(data):
+    # Verificar estacionaridad
+    stationary_series, lags = check_stationarity(data)
+    if lags != 0:
+        estacionaridad = 'No'
+    else:
+        estacionaridad = 'Sí'
+    # Verificar Fac y Fac Parcial
+    p, q = f_autocorrelation(data)
+    if p and q != 0:
+        autocorrelacion = 'Existen rezagos significativos'
+    else:
+        autocorrelacion = 'No existen rezagos significativos'
+    # Verificar normalidad
+    norm = check_noramlity(data)
+    if norm:
+        normalidad = 'Los datos son normales'
+    else:
+        normalidad = 'Los datos no son normales'
+    # Verificar si la serie es ciclica
+    seasonal = 'Sí'
+    return estacionaridad, autocorrelacion, normalidad, seasonal
+
+# -- ---------------------------------------------------------------------------------------------------------------- #
 # Visualizacion de datos de los aspectos estadisticos
 
 
-lista1 = [estacionaridad]
-lista2 = [autocorrelacion]
-lista3 = [normalidad]
-lista4 = ['Sí']
-
-
-def get_dfestadisticos(lista1, lista2, lista3, lista4):
+def get_dfestadisticos(valor1, valor2, valor3, valor4):
+    lista1 = [valor1]
+    lista2 = [valor2]
+    lista3 = [valor3]
+    lista4 = [valor4]
     tabla = pd.DataFrame(columns=['Estacionaridad', 'Autocorrelacion y Autocorrelacion parcial',
                                      'Prueba de normalidad', 'Estacionalidad'])
     tabla['Estacionaridad'] = lista1
@@ -254,11 +248,10 @@ def get_dfestadisticos(lista1, lista2, lista3, lista4):
     tabla['Estacionalidad'] = lista4
     return tabla
 
+# -- ASPECTOS COMPUTACIONALES --------------------------------------------------------------------------------------- #
+# -- ---------------------------------------------------------------------------------------------------------------- #
+# Technical Indicators
 
-df_estadisticos = get_dfestadisticos(lista1, lista2, lista3, lista4)
-
-
-## Technical Indicators
 
 def CCI(data, ndays):
     '''
@@ -282,11 +275,13 @@ def SMA(data, ndays):
     SMA = pd.Series(data['Close'].rolling(ndays).mean(), name='SMA')
     return SMA
 
+
 def BBANDS(data, window):
     ''' Bollinger Bands '''
     MA = data.Close.rolling(window).mean()
     SD = data.Close.rolling(window).std()
     return MA + (2 * SD), MA - (2 * SD)
+
 
 def RSI(data, window):
     ''' Relative Strnegth Index'''
@@ -307,10 +302,12 @@ def price_from_max(data, window):
 def price_from_min(data, window):
     return data['Close'] / data['Close'].rolling(window).min() - 1
 
+
 def price_range(data, window):
     pricerange = (data['Close'] - data['Close'].rolling(window).min()) / \
                  (data['Close'].rolling(window).max() - data['Close'].rolling(window).min())
     return pricerange
+
 
 # %% Labeling: 1 for positive next day return, 0 for negative next day return
 def next_day_ret(df):
@@ -355,6 +352,7 @@ def ret_div(df):
 
 # zscore normalization
 
+
 def z_score(df):
     # zscore
     mean, std = df.Close.mean(), df.Close.std()
@@ -362,12 +360,14 @@ def z_score(df):
 
     return zscore
 
+
 # diff integer
 def int_diff(df, window: np.arange):
     diff = [
         df.Close.diff(x) for x in window
     ]
     return diff
+
 
 # moving averages
 def mov_averages(df, space: np.arange):
@@ -381,7 +381,6 @@ def quartiles(df, n_bins: int):
     'Assign quartiles to data, depending of position'
     bin_fxn = pd.qcut(df.Close, q=n_bins, labels=range(1, n_bins + 1))
     return bin_fxn
-
 
 
 def add_all_features(datos_divisa):
@@ -401,7 +400,9 @@ def add_all_features(datos_divisa):
     datos_divisa['diff1'], datos_divisa['diff2'], datos_divisa['diff3'], datos_divisa['diff4'], datos_divisa['diff5'] = int_diff(datos_divisa, np.arange(1,6))
     datos_divisa['mova1'], datos_divisa['movaf2'], datos_divisa['mova3'], datos_divisa['mova4'], datos_divisa['mova5'] = mov_averages(datos_divisa,np.arange(1,6))
     datos_divisa['quartiles'] = quartiles(datos_divisa, 10)
+    datos_divisa['Label'] = next_day_ret(datos_divisa)[1]
     return datos_divisa
+
 
 def math_transformations(df):
     original_columns = df.columns
