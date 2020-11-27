@@ -18,10 +18,9 @@ from data import *
 Datos históricos de divisa
 '''
 
-
 datos_divisa = read_pkl('USD_MXN')  # 4HRS --> USD/MXN - Mexican Peso
 # print(datos_divisa)
-features_divisa=ft.f_features(datos_divisa, 3)
+# features_divisa = ft.f_features(datos_divisa, 3)
 # -- ---------------------------------------------------------------------------------------------------------------- #
 '''--------------------------------------------------------------
 Partición de datos en train y test
@@ -35,7 +34,7 @@ train = datos_divisa['01-01-2019':]
 Aspectos estadisticos de la serie de tiempo 
 '''
 
-ciclos = ft.check_seasonal(train)  # Matriz que muestra los ciclos que se repiten
+# ciclos = ft.check_seasonal(train)  # Matriz que muestra los ciclos que se repiten
 # Obtener la gráfica de atípicos
 vs.get_atipicos(train)
 # Calcular los valores necesarios para el análisis estadístico
@@ -48,10 +47,11 @@ estadisticos = ft.get_dfestadisticos(estacionaridad, autocorrelacion, normalidad
 Crear variables artificiales - indicadores financieros y estadísticos
 '''
 
-#features_divisa = ft.add_all_features(datos_divisa)
+features_divisa = ft.add_all_features(datos_divisa)
 
+# -- ---------------------------------------------------------------------------------------------------------------- #
 '''--------------------------------------------------------------
-crear variables artificiales - transformaciones matemáticas y change point
+Crear variables artificiales - transformaciones matemáticas y change point
 '''
 
 #datos_divisa = ft.math_transformations(datos_divisa)
@@ -85,6 +85,5 @@ lm_model_s = ft.mult_regression(p_x=nuevos_features_c.iloc[:, 1:], p_y=nuevos_fe
 print('Modelo Lineal 2: rss: ', lm_model_s['rss'])
 # R^2 of the model
 print('Modelo Lineal 2: score: ', lm_model_s['score'])
-
 
 

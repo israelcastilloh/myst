@@ -170,7 +170,7 @@ def check_noramlity(param_data):
 
 
 def check_seasonal(data):
-    f, pxx_den = get_periodogram(data)
+    f, pxx_den = signal.periodogram(data['Open'], 1)
     top_50_periods = {}
     # get indices for 3 highest Pxx values
     top50_freq_indices = np.flip(np.argsort(pxx_den), 0)[3:6]
@@ -436,6 +436,7 @@ def math_transformations(df):
 # ---------------------------------------------------------- MODEL: Multivariate Linear Regression Model -- #
 # --------------------------------------------------------------------------------------------------------- #
 
+
 def mult_regression(p_x, p_y):
     """
     Funcion para ajustar varios modelos lineales
@@ -477,6 +478,7 @@ def mult_regression(p_x, p_y):
 
 # -------------------------------- MODEL: Multivariate Linear Regression Models with L1L2 regularization -- #
 # --------------------------------------------------------------------------------------------------------- #
+
 
 def mult_reg_l1l2(p_x, p_y, p_alpha, p_iter):
     """
@@ -547,6 +549,7 @@ def mult_reg_l1l2(p_x, p_y, p_alpha, p_iter):
 
 # ------------------------------------------------------------------ MODEL: Symbolic Features Generation -- #
 # --------------------------------------------------------------------------------------------------------- #
+
 
 def symbolic_features(p_x, p_y):
     """
