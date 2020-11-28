@@ -1,4 +1,3 @@
-
 """
 # -- --------------------------------------------------------------------------------------------------- -- #
 # -- project: PROYECTO FINAL DE LA CLASE DE TRADING                                                      -- #
@@ -20,7 +19,9 @@ import pandas as pd
 from sklearn.model_selection import train_test_split
 from visualizations import *
 from data import *
+
 pd.options.mode.use_inf_as_na = True
+
 
 # -- ASPECTOS ESTADISTICOS ------------------------------------------------------------------------------------------ #
 
@@ -69,6 +70,7 @@ def check_stationarity(param_data):
             else:
                 param_data = new_data
     return stationary_s, lags
+
 
 # -- ---------------------------------------------------------------------------------------------------------------- #
 # Componente de autocorrelacion y autocorrelacion parcial
@@ -137,6 +139,7 @@ def f_autocorrelation(param_data):
     q = significant_lag(q_s)
     return p, q
 
+
 # -- ---------------------------------------------------------------------------------------------------------------- #
 # Prueba de normalidad de los datos
 
@@ -165,6 +168,7 @@ def check_noramlity(param_data):
     norm = True if normalidad[1] > alpha else False
     return norm
 
+
 # -- ---------------------------------------------------------------------------------------------------------------- #
 # Prueba de estacionalidad de la serie de tiempo
 
@@ -182,6 +186,7 @@ def check_seasonal(data):
     matrix.power = power
     matrix.periods = periods
     return matrix
+
 
 # -- ---------------------------------------------------------------------------------------------------------------- #
 # Prueba de heterodasticidad de los residuos
@@ -207,6 +212,7 @@ def check_hetero(param_data):
     # si p-value menor a alpha se concluye que no hay heterodasticidad
     heter = True if heterosced[1] > 0.05 else False
     return heter
+
 
 # -- ---------------------------------------------------------------------------------------------------------------- #
 # Funcion que corre las pruebas estadisticas
@@ -235,6 +241,7 @@ def get_statistics(data):
     seasonal = 'Sí'
     return estacionaridad, autocorrelacion, normalidad, seasonal
 
+
 # -- ---------------------------------------------------------------------------------------------------------------- #
 # Visualizacion de datos de los aspectos estadisticos
 
@@ -245,12 +252,13 @@ def get_dfestadisticos(valor1, valor2, valor3, valor4):
     lista3 = [valor3]
     lista4 = [valor4]
     tabla = pd.DataFrame(columns=['Estacionaridad', 'Autocorrelacion y Autocorrelacion parcial',
-                                     'Prueba de normalidad', 'Estacionalidad'])
+                                  'Prueba de normalidad', 'Estacionalidad'])
     tabla['Estacionaridad'] = lista1
     tabla['Autocorrelacion y Autocorrelacion parcial'] = lista2
     tabla['Prueba de normalidad'] = lista3
     tabla['Estacionalidad'] = lista4
     return tabla
+
 
 # -- ASPECTOS COMPUTACIONALES --------------------------------------------------------------------------------------- #
 # -- ---------------------------------------------------------------------------------------------------------------- #
@@ -354,6 +362,7 @@ def ret_div(df):
     binary[binary > 0] = 1
     return ret_ar, ret_ar_acum, ret_log, ret_log_acum, binary
 
+
 # zscore normalization
 
 
@@ -394,15 +403,19 @@ def add_all_features(datos_divisa):
     datos_divisa['SMA_10'] = SMA(datos_divisa, 10)
     datos_divisa['MACD'] = datos_divisa['SMA_10'] - datos_divisa['SMA_5']
     datos_divisa['Upper_BB'], datos_divisa['Lower_BB'] = BBANDS(datos_divisa, 10)
-    datos_divisa['Range_BB'] = (datos_divisa['Close'] - datos_divisa['Lower_BB']) / (datos_divisa['Upper_BB'] - datos_divisa['Lower_BB'])
+    datos_divisa['Range_BB'] = (datos_divisa['Close'] - datos_divisa['Lower_BB']) / (
+            datos_divisa['Upper_BB'] - datos_divisa['Lower_BB'])
     datos_divisa['RSI'] = RSI(datos_divisa, 10)
     datos_divisa['Max_range'] = price_from_max(datos_divisa, 20)
     datos_divisa['Min_range'] = price_from_min(datos_divisa, 20)
     datos_divisa['Price_Range'] = price_range(datos_divisa, 50)
-    datos_divisa['returna'], datos_divisa['returna_acums'], datos_divisa['returnlog'], datos_divisa['returnlog_acum'], datos_divisa['binary'] = ret_div(datos_divisa)
+    datos_divisa['returna'], datos_divisa['returna_acums'], datos_divisa['returnlog'], datos_divisa['returnlog_acum'], \
+    datos_divisa['binary'] = ret_div(datos_divisa)
     datos_divisa['zscore'] = z_score(datos_divisa)
-    datos_divisa['diff1'], datos_divisa['diff2'], datos_divisa['diff3'], datos_divisa['diff4'], datos_divisa['diff5'] = int_diff(datos_divisa, np.arange(1,6))
-    datos_divisa['mova1'], datos_divisa['movaf2'], datos_divisa['mova3'], datos_divisa['mova4'], datos_divisa['mova5'] = mov_averages(datos_divisa,np.arange(1,6))
+    datos_divisa['diff1'], datos_divisa['diff2'], datos_divisa['diff3'], datos_divisa['diff4'], datos_divisa[
+        'diff5'] = int_diff(datos_divisa, np.arange(1, 6))
+    datos_divisa['mova1'], datos_divisa['movaf2'], datos_divisa['mova3'], datos_divisa['mova4'], datos_divisa[
+        'mova5'] = mov_averages(datos_divisa, np.arange(1, 6))
     datos_divisa['quartiles'] = quartiles(datos_divisa, 10)
     datos_divisa['Label'] = next_day_ret(datos_divisa)[1]
     return datos_divisa.iloc[1:]
@@ -411,128 +424,89 @@ def add_all_features(datos_divisa):
 def math_transformations(df):
     original_columns = df.columns
     for col in original_columns:
-        df['sin_'+col] = np.sin(df[col].values.astype(float))
-        df['cos_'+col] = np.cos(df[col].values.astype(float))
-        df['square_'+col] = np.square(df[col].values.astype(float))
-        df['sqrt_'+col] = np.sqrt(df[col].values.astype(float))
-        df['exp_'+col] = np.exp(df[col].values.astype(float))
-        df['exp2_'+col] = np.exp2(df[col].values.astype(float))
-        df['tanh_'+col] = np.tanh(df[col].values.astype(float))
-        df['arctan_'+col] = np.arctan(df[col].values.astype(float))
-        df['log_'+col] = np.log(df[col].values.astype(float))
-        df['log2_'+col] = np.log2(df[col].values.astype(float))
-        df['log10_'+col] = np.log10(df[col].values.astype(float))
-        df['sindiff_' + col] = np.sin(df[col].values.astype(float))**(1/2)
-        df['cosdiff_' + col] = np.cos(df[col].values.astype(float))**(1/2)
-        df['squarediff_' + col] = np.square(df[col].values.astype(float))**(1/2)
-        df['sqrtdiff_' + col] = np.sqrt(df[col].values.astype(float))**(1/2)
-        df['tanhdiff_' + col] = np.tanh(df[col].values.astype(float))**(1/2)
-        df['arctandiff_' + col] = np.arctan(df[col].values.astype(float))**(1/2)
-        df['logdiff_' + col] = np.log(df[col].values.astype(float))**(1/2)
-        df['log2diff_' + col] = np.log2(df[col].values.astype(float))**(1/2)
-        df['log10diff_' + col] = np.log10(df[col].values.astype(float))**(1/2)
+        df['sin_' + col] = np.sin(df[col].values.astype(float))
+        df['cos_' + col] = np.cos(df[col].values.astype(float))
+        df['square_' + col] = np.square(df[col].values.astype(float))
+        df['sqrt_' + col] = np.sqrt(df[col].values.astype(float))
+        df['exp_' + col] = np.exp(df[col].values.astype(float))
+        df['exp2_' + col] = np.exp2(df[col].values.astype(float))
+        df['tanh_' + col] = np.tanh(df[col].values.astype(float))
+        df['arctan_' + col] = np.arctan(df[col].values.astype(float))
+        df['log_' + col] = np.log(df[col].values.astype(float))
+        df['log2_' + col] = np.log2(df[col].values.astype(float))
+        df['log10_' + col] = np.log10(df[col].values.astype(float))
+        df['sindiff_' + col] = np.sin(df[col].values.astype(float)) ** (1 / 2)
+        df['cosdiff_' + col] = np.cos(df[col].values.astype(float)) ** (1 / 2)
+        df['squarediff_' + col] = np.square(df[col].values.astype(float)) ** (1 / 2)
+        df['sqrtdiff_' + col] = np.sqrt(df[col].values.astype(float)) ** (1 / 2)
+        df['tanhdiff_' + col] = np.tanh(df[col].values.astype(float)) ** (1 / 2)
+        df['arctandiff_' + col] = np.arctan(df[col].values.astype(float)) ** (1 / 2)
+        df['logdiff_' + col] = np.log(df[col].values.astype(float)) ** (1 / 2)
+        df['log2diff_' + col] = np.log2(df[col].values.astype(float)) ** (1 / 2)
+        df['log10diff_' + col] = np.log10(df[col].values.astype(float)) ** (1 / 2)
     return df
-
-# ---------------------------------------------------------- MODEL: Multivariate Linear Regression Model -- #
-# --------------------------------------------------------------------------------------------------------- #
-
-
-def mult_regression(p_x, p_y):
-    """
-    Funcion para ajustar varios modelos lineales
-
-    Parameters
-    ----------
-
-    p_x: pd.DataFrame
-        with regressors or predictor variables
-        p_x = data_features.iloc[0:30, 3:]
-
-    p_y: pd.DataFrame
-        with variable to predict
-        p_y = data_features.iloc[0:30, 1]
-
-    Returns
-    -------
-    r_models: dict
-        Diccionario con modelos ajustados
-
-    """
-
-    # Fit LINEAR regression
-    linreg = LinearRegression(normalize=False, fit_intercept=False)
-    xtrain, xtest, ytrain, ytest = train_test_split(p_x, p_y, test_size=.8, random_state=455)
-    linreg.fit(xtrain, ytrain)
-    y_p_linear = linreg.predict(xtest)
-    y_p_score = linreg.score(xtest, ytest)
-
-    # Return the result of the model
-    linear_model = {'rss': np.round(sum((y_p_linear - ytest) ** 2), 4),
-                    'predict': ytest,
-                    'model': linreg,
-                    'intercept': linreg.intercept_,
-                    'coef': linreg.coef_,
-                    'score': np.round(y_p_score, 4)}
-    return linear_model
 
 
 # -------------------------------- MODEL: Multivariate Linear Regression Models with L1L2 regularization -- #
 # --------------------------------------------------------------------------------------------------------- #
 
 
-def mult_reg_l1l2(p_x, p_y, p_alpha, p_iter):
+def mult_reg(p_x, p_y):
     """
     Funcion para ajustar varios modelos lineales
 
     Parameters
     ----------
 
-    p_x: pd.DataFrame
-        with regressors or predictor variables
-        p_x = data_features.iloc[0:30, 3:]
+    p_x: pd.DataFrame with regressors or predictor variables
 
-    p_y: pd.DataFrame
-        with variable to predict
-        p_y = data_features.iloc[0:30, 1]
-
-    p_alpha: float
-        alpha for the models
-        p_alpha = alphas[1e-3]
-
-    p_iter: int
-        Number of iterations until stop the model fit process
-        p_iter = 1e6
+    p_y: pd.DataFrame with variable to predict
 
     Returns
     -------
-    r_models: dict
-        Diccionario con modelos ajustados
+    r_models: dict Diccionario con modelos ajustados
 
     """
     xtrain, xtest, ytrain, ytest = train_test_split(p_x, p_y, test_size=.8, random_state=455)
+
+    # fit linear regression
+    linreg = LinearRegression(normalize=False, fit_intercept=False)
+    linreg.fit(xtrain, ytrain)
+    y_p_linear = linreg.predict(xtest)
+    y_p_score = linreg.score(xtest, ytest)
+
     # Fit RIDGE regression
-    ridgereg = Ridge(alpha=p_alpha, normalize=False, max_iter=p_iter, fit_intercept=False)
+    ridgereg = Ridge(normalize=True)
     ridgereg.fit(xtrain, ytrain)
     y_p_ridge = ridgereg.predict(xtest)
 
     # Fit LASSO regression
-    lassoreg = Lasso(alpha=p_alpha, normalize=False, max_iter=p_iter, fit_intercept=False)
+    lassoreg = Lasso(normalize=True)
     lassoreg.fit(xtrain, ytrain)
     y_p_lasso = lassoreg.predict(xtest)
 
     # Fit ElasticNet regression
-    enetreg = ElasticNet(alpha=p_alpha, normalize=False, max_iter=p_iter, l1_ratio=0.5, fit_intercept=False)
+    enetreg = ElasticNet(normalize=True)
     enetreg.fit(xtrain, ytrain)
     y_p_enet = enetreg.predict(xtest)
 
     # RSS = residual sum of squares
 
     # Return the result of the model
-    r_models = {'rige': {'rss': sum((y_p_ridge - ytest) ** 2),
-                         'predict': y_p_ridge,
-                         'model': ridgereg,
-                         'intercept': ridgereg.intercept_,
-                         'coef': ridgereg.coef_},
+    r_models = {"summary": {"linear rss": sum((y_p_linear - ytest) ** 2),
+                            "Ridge rss": sum((y_p_ridge - ytest) ** 2),
+                            "lasso rss": sum((y_p_lasso - ytest) ** 2),
+                            "elasticnet rss": sum((y_p_enet - ytest) ** 2)},
+                'linear': {'rss': sum((y_p_linear - ytest) ** 2),
+                           'predict': y_p_linear,
+                           'model': linreg,
+                           'intercept': linreg.intercept_,
+                           'coef': linreg.coef_},
+                'ridge': {'rss': sum((y_p_ridge - ytest) ** 2),
+                          'predict': y_p_ridge,
+                          'model': ridgereg,
+                          'intercept': ridgereg.intercept_,
+                          'coef': ridgereg.coef_},
                 'lasso': {'rss': sum((y_p_lasso - ytest) ** 2),
                           'predict': y_p_lasso,
                           'model': lassoreg,
@@ -546,6 +520,7 @@ def mult_reg_l1l2(p_x, p_y, p_alpha, p_iter):
                 }
 
     return r_models
+
 
 # ------------------------------------------------------------------ MODEL: Symbolic Features Generation -- #
 # --------------------------------------------------------------------------------------------------------- #
@@ -561,20 +536,16 @@ def symbolic_features(p_x, p_y):
         with regressors or predictor variables
         p_x = data_features.iloc[0:30, 3:]
 
-    p_y: pd.DataFrame
-        with variable to predict
-        p_y = data_features.iloc[0:30, 1]
+    p_y: pd.DataFrame with variable to predict
 
     Returns
     -------
-    score_gp: float
-        error of prediction
+    results: model
 
     """
-
     model = SymbolicTransformer(function_set=["sub", "add", 'inv', 'mul', 'div', 'abs', 'log'],
                                 population_size=5000, hall_of_fame=100, n_components=20,
-                                generations=20, tournament_size=20,  stopping_criteria=.05,
+                                generations=20, tournament_size=20, stopping_criteria=.05,
                                 const_range=None, init_depth=(4, 12),
                                 metric='pearson', parsimony_coefficient=0.001,
                                 p_crossover=0.4, p_subtree_mutation=0.2, p_hoist_mutation=0.1,
@@ -611,7 +582,6 @@ def f_features(p_data, p_nmax):
         # rezago n de High - Low
         data['lag_hl_' + str(n + 1)] = data['hl'].shift(n + 1)
 
-
         # promedio movil de open-high de ventana n
         data['ma_ol_' + str(n + 2)] = data['ol'].rolling(n + 2).mean()
         # promedio movil de ventana n
@@ -629,4 +599,10 @@ def f_features(p_data, p_nmax):
             data['had_' + 'lag_oi_' + str(n + 1) + '_' + 'ma_hl_' + str(n + 2)] = x * data['ma_hl_' + str(n + 2)]
     data = data.dropna(axis='rows')
     data = data.drop(['Open', 'High', 'Low', 'Close'], axis=1)
+    picos = check_seasonal(p_data)
+    t = np.arange(1, len(data) + 1)
+    data["t"] = t
+    for i in picos.periods:
+        data[f"{i:.2f}_sen"] = np.abs(np.sin(((2 * np.pi) / i) * t))
+        data[f"{i:.2f}_cos"] = np.abs(np.cos(((2 * np.pi) / i) * t))
     return data
