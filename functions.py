@@ -473,12 +473,11 @@ def mult_reg(p_x, p_y):
     linreg = LinearRegression(normalize=False, fit_intercept=False)
     linreg.fit(xtrain, ytrain)
     y_p_linear = linreg.predict(xtest)
-    y_p_score = linreg.score(xtest, ytest)
 
     # Fit RIDGE regression
     ridgereg = Ridge(normalize=True)
-    ridgereg.fit(xtrain, ytrain)
-    y_p_ridge = ridgereg.predict(xtest)
+    model = ridgereg.fit(xtrain, ytrain)
+    y_p_ridge = model.predict(xtest)
 
     # Fit LASSO regression
     lassoreg = Lasso(normalize=True)
@@ -606,3 +605,7 @@ def f_features(p_data, p_nmax):
         data[f"{i:.2f}_sen"] = np.abs(np.sin(((2 * np.pi) / i) * t))
         data[f"{i:.2f}_cos"] = np.abs(np.cos(((2 * np.pi) / i) * t))
     return data
+
+
+def recursivo(variables, modelo):
+    return prediccion_2019

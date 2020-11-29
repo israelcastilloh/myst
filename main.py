@@ -51,7 +51,7 @@ features_divisa = ft.f_features(datos_divisa, 3)
 '''--------------------------------------------------------------
 Crear modelo inicial
 '''
-lm_model = ft.mult_reg(p_x=features_divisa.iloc[:, 1:], p_y=features_divisa.iloc[:, 0])
+lm_model = ft.mult_reg(p_x=features_divisa.iloc[:, 1:][:'01-01-2019'], p_y=features_divisa.iloc[:, 0][:'01-01-2019'])
 
 # -- ---------------------------------------------------------------------------------------------------------------- #
 '''--------------------------------------------------------------
@@ -63,7 +63,9 @@ nuevos_features = pd.DataFrame(symbolic['fit'], index=features_divisa.index)
 nuevos_features_c = pd.concat([features_divisa, nuevos_features], axis=1)
 
 # modelo
-lm_model_s = ft.mult_reg(p_x=nuevos_features_c.iloc[:, 1:], p_y=nuevos_features_c.iloc[:, 0])
+lm_model_s = ft.mult_reg(p_x=nuevos_features_c.iloc[:, 1:][:'01-01-2019'], p_y=nuevos_features_c.iloc[:, 0][:'01-01-2019'])
 
-# mejor modelo en lm_model_s["ridge"]
+recursivo=ft.recursivo(nuevos_features_c, lm_model_s["ridge"]["model"])
 
+# dataframe con nuevos_features_c["predict"] (dato real que quiero pronosticar),recursivo (dato pronosticado con ridge)
+# , close de datos divisa recortado, "decisión"
