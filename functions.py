@@ -420,36 +420,8 @@ def add_all_features(datos_divisa):
     datos_divisa['Label'] = next_day_ret(datos_divisa)[1]
     return datos_divisa.iloc[1:]
 
-
-def math_transformations(df):
-    original_columns = df.columns
-    for col in original_columns:
-        df['sin_' + col] = np.sin(df[col].values.astype(float))
-        df['cos_' + col] = np.cos(df[col].values.astype(float))
-        df['square_' + col] = np.square(df[col].values.astype(float))
-        df['sqrt_' + col] = np.sqrt(df[col].values.astype(float))
-        df['exp_' + col] = np.exp(df[col].values.astype(float))
-        df['exp2_' + col] = np.exp2(df[col].values.astype(float))
-        df['tanh_' + col] = np.tanh(df[col].values.astype(float))
-        df['arctan_' + col] = np.arctan(df[col].values.astype(float))
-        df['log_' + col] = np.log(df[col].values.astype(float))
-        df['log2_' + col] = np.log2(df[col].values.astype(float))
-        df['log10_' + col] = np.log10(df[col].values.astype(float))
-        df['sindiff_' + col] = np.sin(df[col].values.astype(float)) ** (1 / 2)
-        df['cosdiff_' + col] = np.cos(df[col].values.astype(float)) ** (1 / 2)
-        df['squarediff_' + col] = np.square(df[col].values.astype(float)) ** (1 / 2)
-        df['sqrtdiff_' + col] = np.sqrt(df[col].values.astype(float)) ** (1 / 2)
-        df['tanhdiff_' + col] = np.tanh(df[col].values.astype(float)) ** (1 / 2)
-        df['arctandiff_' + col] = np.arctan(df[col].values.astype(float)) ** (1 / 2)
-        df['logdiff_' + col] = np.log(df[col].values.astype(float)) ** (1 / 2)
-        df['log2diff_' + col] = np.log2(df[col].values.astype(float)) ** (1 / 2)
-        df['log10diff_' + col] = np.log10(df[col].values.astype(float)) ** (1 / 2)
-    return df
-
-
 # -------------------------------- MODEL: Multivariate Linear Regression Models with L1L2 regularization -- #
 # --------------------------------------------------------------------------------------------------------- #
-
 
 def mult_reg(p_x, p_y):
     """
@@ -496,6 +468,7 @@ def mult_reg(p_x, p_y):
                             "Ridge rss": sum((y_p_ridge - ytest) ** 2),
                             "lasso rss": sum((y_p_lasso - ytest) ** 2),
                             "elasticnet rss": sum((y_p_enet - ytest) ** 2)},
+                "test": ytest,
                 'linear': {'rss': sum((y_p_linear - ytest) ** 2),
                            'predict': y_p_linear,
                            'model': linreg,
@@ -542,7 +515,8 @@ def symbolic_features(p_x, p_y):
     results: model
 
     """
-    model = SymbolicTransformer(function_set=["sub", "add", 'inv', 'mul', 'div', 'abs', 'log'],
+    model = SymbolicTransformer(function_set=["sub", "add", 'inv', 'mul', 'div', 'abs', 'log', "max", "min", "sin",
+                                              "cos"],
                                 population_size=5000, hall_of_fame=100, n_components=20,
                                 generations=20, tournament_size=20, stopping_criteria=.05,
                                 const_range=None, init_depth=(4, 12),
@@ -608,4 +582,14 @@ def f_features(p_data, p_nmax):
 
 
 def recursivo(variables, modelo):
-    return prediccion_2019
+    predict_ridge = pd.DataFrame(index=variables.index[931:], columns=["predicted","real"])
+    predict_ridge["real"]=variables.iloc[:, 0]['01-01-2019':]
+    for period in range(0, len(variables['01-01-2019':])):
+        xtrain = variables.iloc[:len(variables[:'01-01-2019'])+period, 1:]
+        xtest = variables.iloc[len(variables['01-01-2019'])+period:len(variables['01-01-2019'])+period+1, 1:]
+        ytrain = variables.iloc[:len(variables[:'01-01-2019'])+period, 0]
+        ridgereg = Ridge(normalize=True)
+        model = ridgereg.fit(xtrain, ytrain)
+        y_p_ridge = model.predict(xtest)
+        predict_ridge.iloc[period, 0] = float(y_p_ridge)
+    return predict_ridge

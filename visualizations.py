@@ -53,3 +53,20 @@ def get_atipicos(data):
     fig.update_layout(title="Detección de valores atípicos", xaxis_title="Prices")
     return fig.show()
 
+
+def pronostico(pronos):
+    fig = go.Figure()
+    fig.add_trace(go.Scatter(x=pronos.index, y=pronos["predicted"], mode='lines', name='pronóstico'))
+    fig.add_trace(go.Scatter(x=pronos.index, y=pronos["real"], mode='lines', name='real'))
+    fig.update_layout(title="Pronóstico divisa USD-MXN", xaxis_title="Tiempo (4H)", yaxis_title="Costo Dólar (Pesos)")
+    fig.show()
+
+
+def general(data):
+    fig = go.Figure()
+    fig.add_trace(go.Scatter(x=data.index, y=data["Open"], mode='lines', name='Open'))
+    fig.add_trace(go.Scatter(x=data.index, y=data["Close"], mode='lines', name='Close'))
+    fig.add_trace(go.Scatter(x=data.index, y=data["High"], mode='lines', name='High'))
+    fig.add_trace(go.Scatter(x=data.index, y=data["Low"], mode='lines', name='Low'))
+    fig.update_layout(title="Divisa USD-MXN", xaxis_title="Tiempo (4H)", yaxis_title="Costo Dólar (Pesos)")
+    fig.show()

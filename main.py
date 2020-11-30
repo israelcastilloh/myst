@@ -63,9 +63,18 @@ nuevos_features = pd.DataFrame(symbolic['fit'], index=features_divisa.index)
 nuevos_features_c = pd.concat([features_divisa, nuevos_features], axis=1)
 
 # modelo
-lm_model_s = ft.mult_reg(p_x=nuevos_features_c.iloc[:, 1:][:'01-01-2019'], p_y=nuevos_features_c.iloc[:, 0][:'01-01-2019'])
+lm_model_s = ft.mult_reg(p_x=nuevos_features_c.iloc[:, 1:][:'01-01-2019'],
+                         p_y=nuevos_features_c.iloc[:, 0][:'01-01-2019'])
 
-recursivo=ft.recursivo(nuevos_features_c, lm_model_s["ridge"]["model"])
+prediccion = ft.recursivo(nuevos_features_c, lm_model_s["ridge"]["model"]) #reales y pronostico
 
-# dataframe con nuevos_features_c["predict"] (dato real que quiero pronosticar),recursivo (dato pronosticado con ridge)
-# , close de datos divisa recortado, "decisión"
+
+# dataframe con
+# "real" (dato real que quiero pronosticar), y con el que voy a cerrar posición
+# "predicción" (dato pronosticado 4 horas después con ridge) (para generar decisión)
+# close de datos_divisa, seria al precio al que se va a comprar o vender
+# (los indices ya están ajustados para no tener que moverlos, el predict y real están uno adelante en el tiempo)
+# cantidad de dinero ivertido (1% del que tenía)
+# "decisión (por ejemplo si mi pronóstico es mayor a dos desviaciones estandar del dato pronosticado anterior", un "compra, venta o nada",
+# "ganancias en cada momento, inciiando con 100,000 usd
+# ganancias.acum()
