@@ -593,3 +593,32 @@ def recursivo(variables, modelo):
         y_p_ridge = model.predict(xtest)
         predict_ridge.iloc[period, 0] = float(y_p_ridge)
     return predict_ridge
+
+pd.set_option("display.max_rows", None, "display.max_columns", 10)
+pd.set_option('display.float_format', '{:.2f}'.format)
+
+def backtest(prediccion, historicos):
+    capital_total = 100_000
+    monto_operacion = capital_total*.01
+
+    backtest_df = pd.concat([prediccion, historicos.Close], axis=1).dropna()
+    backtest_df = pd.concat([backtest_df, historicos.Open], axis=1).dropna()
+
+    backtest_df['event'] = ''
+    backtest_df['p_apertura'] = 0.0000
+    backtest_df['p_l'] = 0.0000
+
+
+    for p in range(len(backtest_df.predicted)-1):
+        if backtest_df.predicted[p] < backtest_df.Close[p]:
+            ########################################################
+            backtest_df.event[p] = 'sell'
+            backtest_df.p_apertura[p] = backtest_df.Open[p]
+            backtest_df.p_l[p] = monto_operacion*(backtest_df.p_apertura[p]-backtest_df.real[p])
+        else:
+            backtest_df.event[p] = 'buy'
+            backtest_df.p_apertura[p] = backtest_df.Open[p]
+            backtest_df.p_l[p] = monto_operacion*(backtest_df.real[p]-backtest_df.p_apertura[p])
+    backtest_df['cap'] = np.cumsum(backtest_df.p_l) + capital_total
+    print(backtest_df.tail(10))
+    return

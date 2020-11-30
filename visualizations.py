@@ -68,5 +68,5 @@ def general(data):
     fig.add_trace(go.Scatter(x=data.index, y=data["Close"], mode='lines', name='Close'))
     fig.add_trace(go.Scatter(x=data.index, y=data["High"], mode='lines', name='High'))
     fig.add_trace(go.Scatter(x=data.index, y=data["Low"], mode='lines', name='Low'))
-    fig.update_layout(title="Divisa USD-MXN", xaxis_title="Tiempo (4H)", yaxis_title="Costo Dólar (Pesos)")
+    fig.update_layout(title="Divisa USD-MXN", xaxis_title="Tiempo (D)", yaxis_title="Costo Dólar (Pesos)")
     fig.show()

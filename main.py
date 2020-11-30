@@ -30,7 +30,7 @@ test = datos_divisa['01-01-2019':]
 
 # -- ---------------------------------------------------------------------------------------------------------------- #
 '''--------------------------------------------------------------
-Aspectos estadisticos de la serie de tiempo 
+Aspectos estadisticos de la serie de tiempo
 '''
 
 # ciclos = ft.check_seasonal(train)  # Matriz que muestra los ciclos que se repiten
@@ -67,6 +67,8 @@ lm_model_s = ft.mult_reg(p_x=nuevos_features_c.iloc[:, 1:][:'01-01-2019'],
                          p_y=nuevos_features_c.iloc[:, 0][:'01-01-2019'])
 
 prediccion = ft.recursivo(nuevos_features_c, lm_model_s["ridge"]["model"]) #reales y pronostico
+
+backtest = ft.backtest(prediccion, datos_divisa)
 
 
 # dataframe con
