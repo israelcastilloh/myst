@@ -68,6 +68,10 @@ lm_model_s = ft.mult_reg(p_x=nuevos_features_c.iloc[:, 1:][:'01-01-2019'],
 
 prediccion = ft.recursivo(nuevos_features_c, lm_model_s["ridge"]["model"]) #reales y pronostico
 
+# -- ---------------------------------------------------------------------------------------------------------------- #
+'''--------------------------------------------------------------
+Backtest
+'''
 backtest = ft.backtest(prediccion, datos_divisa)
 
 

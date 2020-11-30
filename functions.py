@@ -608,7 +608,6 @@ def backtest(prediccion, historicos):
     backtest_df['p_apertura'] = 0.0000
     backtest_df['p_l'] = 0.0000
 
-
     for p in range(len(backtest_df.predicted)-1):
         if backtest_df.predicted[p] < backtest_df.Close[p]:
             ########################################################
@@ -620,5 +619,4 @@ def backtest(prediccion, historicos):
             backtest_df.p_apertura[p] = backtest_df.Open[p]
             backtest_df.p_l[p] = monto_operacion*(backtest_df.real[p]-backtest_df.p_apertura[p])
     backtest_df['cap'] = np.cumsum(backtest_df.p_l) + capital_total
-    print(backtest_df.tail(10))
     return
