@@ -70,3 +70,37 @@ def general(data):
     fig.add_trace(go.Scatter(x=data.index, y=data["Low"], mode='lines', name='Low'))
     fig.update_layout(title="Divisa USD-MXN", xaxis_title="Tiempo (D)", yaxis_title="Costo Dólar (Pesos)")
     fig.show()
+
+# -- ---------------------------------------------------------------------------------------------------------------- #
+# Graficas Mad
+
+
+def get_chart_drawdown_drawup(param: False, lista, datos):
+    """
+    Funcion que te retorna la gráfica de drawdown y drawup de los movimientos diarios de la cuenta de trading.
+    Parameters
+     ---------
+    param: Funcion de activacion: En caso de que de True se activará que retorne la grafica.
+    A pesar de que no se le envian parametros a la funcion es importante saber que se utilizan parametros importados
+    de functions especificamente de la funcion que calcula el drawdown y drawup, ya que es de ahi donde se obtienen
+    los datos para poder graficar correctamente.
+    Returns
+    ---------
+    Grafica con la evolucion del capital diario así como su drawup y su drawdown
+    Debugging
+    ---------
+    get_chart_drawdown_drawup(True)
+    """
+    if param:
+        fig = go.Figure()
+        fig.add_trace(go.Scatter(x=datos['timestamp'], y=datos['cap'], mode='lines',
+                                 name='Profit diario', line=dict(color='black')))
+        # Drawdown
+
+        fig.add_trace(go.Scatter(x=[lista[0][1], lista[2][1]], y=[lista[1][1], lista[3][1]],
+                                 mode='lines', name='Drawdown', line=dict(color="crimson", width=4, dash="dashdot",)))
+        # Drawup
+        fig.add_trace(go.Scatter(x=[lista[4][1], lista[6][1]], y=[lista[5][1], lista[7][1]],
+                                 mode='lines', name='Drawdup', line=dict(color="LightSeaGreen", width=4, dash="dashdot",)))
+        fig.update_layout(title="Drawdown y Drawup", xaxis_title="Fechas", yaxis_title="Profit acumulado")
+        return fig.show()

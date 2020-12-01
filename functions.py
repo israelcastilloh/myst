@@ -205,12 +205,11 @@ def check_hetero(param_data):
     ---------
     check_hetero(datos_divisa)
     """
-    param_data = param_data['Open']
     # arch test
     heterosced = het_arch(param_data)
     alpha = .05  # intervalo de 95% de confianza
     # si p-value menor a alpha se concluye que no hay heterodasticidad
-    heter = True if heterosced[1] > 0.05 else False
+    heter = True if heterosced[1] > alpha else False
     return heter
 
 
@@ -594,8 +593,10 @@ def recursivo(variables, modelo):
         predict_ridge.iloc[period, 0] = float(y_p_ridge)
     return predict_ridge
 
+
 pd.set_option("display.max_rows", None, "display.max_columns", 10)
 pd.set_option('display.float_format', '{:.2f}'.format)
+
 
 def backtest(prediccion, historicos):
     capital_total = 100_000
@@ -619,4 +620,206 @@ def backtest(prediccion, historicos):
             backtest_df.p_apertura[p] = backtest_df.Open[p]
             backtest_df.p_l[p] = monto_operacion*(backtest_df.real[p]-backtest_df.p_apertura[p])
     backtest_df['cap'] = np.cumsum(backtest_df.p_l) + capital_total
-    return
+    return backtest_df
+
+
+# ------------------------------------------------------------------ Metricas de atribucion al desempeño -- #
+# --------------------------------------------------------------------------------------------------------- #
+# Calcular residuos de nuestro modelo
+
+def get_residuos(datos):
+    residuos = datos['real'] - datos['predicted']
+    return residuos
+
+# --------------------------------------------------------------------------------------------------------- #
+# Funciones auxiliares que calculen los datos de minimos y maximos
+
+def get_maximo(data, ind, param=False):
+    """
+     Función que me encuentra máximo y su información (Indice y fecha) del DataFrame
+     Parameters
+     ---------
+     data: DataFrame: df Data Frame que contiene la lista en la que queremos encontrar el máximo
+     ind: int: Entero que señala el indice desde el cual buscamos ese máximo
+     param: Función de activación para buscar a la derecha del indice
+     Returns
+     ---------
+     maximo: float: el valor maximo encontrado
+     indice_max: int: Lugar donde se encuentra el valor máximo en el DataFrame
+     fecha: Datetime: Es la fecha en la cual se encontro el valor máximo
+     Debuggin
+     ---------
+     maximo_1_d, inidice_maximo_1_d, fecha_max_1_d = get_maximo(param_data.loc[:indice_minimo_1_d], 0)
+     maximo_2, inidice_maximo_2, fecha_max_2 = get_maximo(param_data.loc[indice_minimo_2:], indice_minimo_2, True)
+     """
+    maximo = np.max(data['cap'])
+    indice_max = (np.where(data['cap'] == maximo))[0]
+    if len(indice_max) > 1:
+        indice_max = int(indice_max[0])
+    else:
+        indice_max = int(indice_max)
+    if param:
+        indice_max = indice_max+ind
+        fecha = pd.to_datetime(data.loc[indice_max]['timestamp']).date()
+    else:
+        fecha = pd.to_datetime(data.loc[indice_max]['timestamp']).date()
+    return maximo, indice_max, fecha
+
+
+# -- ---------------------------------------------------------------------------------------------------------------- #
+
+
+def get_minimo(data, ind, param=False):
+    """
+     Función que me encuentra mínimo y su información (Indice y fecha) del DataFrame
+     Parameters
+     ---------
+     data: DataFrame: df Data Frame que contiene la lista en la que queremos encontrar el mínimo
+     ind: int: Entero que señala el indice desde el cual buscamos ese mínimo
+     param: Función de activación para buscar a la derecha del indice
+     Returns
+     ---------
+     mínimo: float: el valor mínimo encontrado
+     indice_min: int: Lugar donde se encuentra el valor mínimo en el DataFrame
+     fecha: Datetime: Es la fecha en la cual se encontro el valor mínimo
+     Debuggin
+     ---------
+     minimo_1_d, indice_minimo_1_d, fecha_min_1_d = get_minimo(param_data, 0)
+     minimo_2_d, inidice_minimo_2_d, fecha_min_2_d = get_maximo(param_data.loc[indice_maximo_2_d:], indice_maximo_2_d, True)
+     """
+    minimo = np.min(data['cap'])
+    indice_min = (np.where(data['cap'] == minimo))[0]
+    if len(indice_min) > 1:
+        indice_min = int(indice_min[0])
+    else:
+        indice_min = int(indice_min)
+    if param:
+        indice_min = indice_min+ind
+        fecha = pd.to_datetime(data.loc[indice_min]['timestamp']).date()
+    else:
+        fecha = pd.to_datetime(data.loc[indice_min]['timestamp']).date()
+    return minimo, indice_min, fecha
+
+
+# --------------------------------------------------------------------------------------------------------- #
+
+def get_df(param_data):
+    df = pd.DataFrame(param_data['cap'])
+    lista3 = range(0, len(df))
+    df.index = lista3
+    df['timestamp'] = param_data.index
+    param_data = df
+    return param_data
+
+def f_estadisticas_mad(param_data, param=False):
+    """
+      Función que cálcula las estadisticas de los valores de trading(Sharpe, drawdown, drawnup)
+      Parameters
+      ---------
+      param_data: DataFrame: df Data Frame que contiene el profit a utilizar para estas estadisticas
+      param: Función de activación para cambiar el nombre de una columna
+      Returns
+      ---------
+      mad: DataFrame: df que contiene las estadisticas
+      fecha_max_dd: list: lista donde se encuentra la fecha del valor máximo del Drawdown y su indice
+      valor_max_dd: lista: lista donde se encuentra el valor máximo en el DataFrame del Drawdown y su indice
+      fecha_min_dd: lista: lista donde se encuentra la fecha del valor mínimo del Drawdown y su indice
+      valor_min_dd: lista: lista donde se encuentra el valor mínimo en el DataFrame del Drawdown y su indice
+      fecha_max_du: lista: lista donde se encuentra la fecha del valor máximo del Drawup y su indice
+      valor_max_du: lista: lista donde se encuentra el valor máximo en el DataFrame del Drawup y su indice
+      fecha_min_du: lista: lista donde se encuentra la fecha del valor mínimo del Drawup y su indice
+      valor_min_du: lista: lista donde se encuentra el valor mínimo en el DataFrame del Drawup y su indice
+      Debuggin
+      ---------
+      f_estadisticas_mad(data_nueva2)
+      """
+    # Calculo del Sharpe
+    rf = .05 / 300
+    daily_closes = param_data['cap']
+    daily_logret = np.log(daily_closes / daily_closes.shift()).dropna()
+    media = np.mean(daily_logret)
+    desvest = np.std(daily_logret)
+    if desvest == 0:
+        sharpe = 0
+    else:
+        sharpe = (media - rf) / desvest
+
+    # Drawdown
+    # Primera parte: encontrar minimo y analizar su izquierda
+    minimo_1_d, indice_minimo_1_d, fecha_min_1_d = get_minimo(param_data, 0)
+    if indice_minimo_1_d == 0:
+        drawup_1_d = 0
+        informacion_drawdown_1 = "[" + " " + str(fecha_min_1_d) + " " + str(fecha_min_1_d) + " " + str(drawup_1_d) + "]"
+    else:
+        maximo_1_d, indice_maximo_1_d, fecha_max_1_d = get_maximo(param_data.loc[:indice_minimo_1_d], 0)
+        drawdown_1 = maximo_1_d - minimo_1_d
+        informacion_drawdown_1 = "[" + " " + str(fecha_max_1_d) + " " + str(fecha_min_1_d) + " " + str(drawdown_1) + "]"
+    # Segunda parte: encontrar maximo y analizar su derecha
+    maximo_2_d, indice_maximo_2_d, fecha_max_2_d = get_maximo(param_data, 0)
+    if indice_maximo_2_d == len(param_data):
+        drawdown_2 = 0
+        informacion_drawup_2 = "[" + " " + str(fecha_max_2_d) + " " + str(fecha_max_2_d) + " " + str(drawdown_2) + "]"
+    else:
+        minimo_2_d, indice_minimo_2_d, fecha_min_2_d = get_maximo(param_data.loc[indice_maximo_2_d:], indice_maximo_2_d, True)
+        drawdown_2 = maximo_2_d - minimo_2_d
+        informacion_drawdown_2 = "[" + " " + str(fecha_max_2_d) + " " + str(fecha_min_2_d) + " " + str(drawdown_2) + "]"
+    # Elegir el drawdown más grande
+    if drawdown_1 > drawdown_2:
+        informacion_drawdown = informacion_drawdown_1
+        fecha_max_dd = [indice_maximo_1_d, fecha_max_1_d]
+        valor_max_dd = [indice_maximo_1_d, maximo_1_d]
+        fecha_min_dd = [indice_minimo_1_d, fecha_min_1_d]
+        valor_min_dd = [indice_minimo_1_d, minimo_1_d]
+    else:
+        informacion_drawdown = informacion_drawdown_2
+        fecha_max_dd = [indice_maximo_2_d, fecha_max_2_d]
+        valor_max_dd = [indice_maximo_2_d, maximo_2_d]
+        fecha_min_dd = [indice_minimo_2_d, fecha_min_2_d]
+        valor_min_dd = [indice_minimo_2_d, minimo_2_d]
+    # Drawup
+    # Primera parte: encontrar maximo y analizar su izquierda
+    maximo_1, indice_maximo_1, fecha_max_1 = get_maximo(param_data, 0)
+    if indice_maximo_1 == 0:
+        drawup_1 = 0
+        informacion_drawup_1 = "[" + " " + str(fecha_max_1) + " " + str(fecha_max_1) + " " + str(drawup_1) + "]"
+    else:
+        minimo_1, indice_minimo_1, fecha_min_1 = get_minimo(param_data.loc[:indice_maximo_1], 0)
+        drawup_1 = maximo_1 - minimo_1
+        informacion_drawup_1 = "[" + " " + str(fecha_min_1) + " " + str(fecha_max_1) + " " + str(drawup_1) + "]"
+    # Segunda parte: encontrar minimo y analizar su derecha
+    minimo_2, indice_minimo_2, fecha_min_2 = get_minimo(param_data, 0)
+    if indice_minimo_2 == len(param_data):
+        drawup_2 = 0
+        informacion_drawup_2 = "[" + " " + str(fecha_min_2) + " " + str(fecha_min_2) + " " + str(drawup_2) + "]"
+    else:
+        maximo_2, indice_maximo_2, fecha_max_2 = get_maximo(param_data.loc[indice_minimo_2:], indice_minimo_2, True)
+        drawup_2 = maximo_2 - minimo_2
+        informacion_drawup_2 = "[" + " " + str(fecha_min_2) + " " + str(fecha_max_2) + " " + str(drawup_2) + "]"
+    # Elegir el drawup más grande
+    if drawup_1 > drawup_2:
+        informacion_drawup = informacion_drawup_1
+        fecha_max_du = [indice_maximo_1, fecha_max_1]
+        valor_max_du = [indice_maximo_1, maximo_1]
+        fecha_min_du = [indice_minimo_1, fecha_min_1]
+        valor_min_du = [indice_minimo_1, minimo_1]
+    else:
+        informacion_drawup = informacion_drawup_2
+        fecha_max_du = [indice_maximo_2, fecha_max_2]
+        valor_max_du = [indice_maximo_2, maximo_2]
+        fecha_min_du = [indice_minimo_2, fecha_min_2]
+        valor_min_du = [indice_minimo_2, minimo_2]
+
+    # Crear DataFrame con los datos solicitados
+    metricas = ['sharpe', 'drawdown_capi', 'drawup_capi']
+    valor = [sharpe, informacion_drawdown, informacion_drawup]
+    descripcion = ['Sharpe Ratio', 'DrawDown de Capital', 'DrawUp de Capital']
+    mad = pd.DataFrame(columns=['metrica', 'valor', 'descripcion'])
+    mad['metrica'] = metricas
+    mad['valor'] = valor
+    mad['descripcion'] = descripcion
+
+    return mad, [fecha_max_dd, valor_max_dd, fecha_min_dd, valor_min_dd, fecha_max_du, valor_max_du, fecha_min_du,
+                 valor_min_du]
+
+
+

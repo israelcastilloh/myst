@@ -35,7 +35,6 @@ Aspectos estadisticos de la serie de tiempo
 
 # ciclos = ft.check_seasonal(train)  # Matriz que muestra los ciclos que se repiten
 # Obtener la gráfica de atípicos
-#vs.get_atipicos(train)
 # Calcular los valores necesarios para el análisis estadístico
 estacionaridad, autocorrelacion, normalidad, seasonal = ft.get_statistics(train)
 # Obtener DataFrame con resultados
@@ -84,3 +83,12 @@ backtest = ft.backtest(prediccion, datos_divisa)
 # "decisión (por ejemplo si mi pronóstico es mayor a dos desviaciones estandar del dato pronosticado anterior", un "compra, venta o nada",
 # "ganancias en cada momento, inciiando con 100,000 usd
 # ganancias.acum()
+# -- ---------------------------------------------------------------------------------------------------------------- #
+'''--------------------------------------------------------------
+Metricas de atribucion al desempeño
+'''
+residuos = ft.get_residuos(backtest)
+hetero = ft.check_hetero(residuos)
+df = ft.get_df(backtest)
+mad, lista = ft.f_estadisticas_mad(df, True)
+
