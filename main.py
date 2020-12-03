@@ -59,13 +59,12 @@ Crear modelo con features simbolicos
 # Generacion de un features simbolicas, agregadas al modelo
 symbolic = ft.symbolic_features(p_x=features_divisa.iloc[:, 1:], p_y=features_divisa.iloc[:, 0])
 nuevos_features = pd.DataFrame(symbolic['fit'], index=features_divisa.index)
-nuevos_features_c = pd.concat([features_divisa, nuevos_features], axis=1)
 
 # modelo
-lm_model_s = ft.mult_reg(p_x=nuevos_features_c.iloc[:, 1:][:'01-01-2019'],
-                         p_y=nuevos_features_c.iloc[:, 0][:'01-01-2019'])
+lm_model_s = ft.mult_reg(p_x=nuevos_features[:'01-01-2019'],
+                         p_y=features_divisa.iloc[:, 0][:'01-01-2019'])
 
-prediccion = ft.recursivo(nuevos_features_c, lm_model_s["ridge"]["model"]) #reales y pronostico
+prediccion = ft.recursivo(nuevos_features, features_divisa, lm_model_s["ridge"]["model"]) #reales y pronostico
 
 # -- ---------------------------------------------------------------------------------------------------------------- #
 '''--------------------------------------------------------------

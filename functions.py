@@ -305,120 +305,6 @@ def RSI(data, window):
     RS1 = roll_up1 / roll_down1
     return 100.0 - (100.0 / (1.0 + RS1))
 
-
-def price_from_max(data, window):
-    return data['Close'] / data['Close'].rolling(window).max()
-
-
-def price_from_min(data, window):
-    return data['Close'] / data['Close'].rolling(window).min() - 1
-
-
-def price_range(data, window):
-    pricerange = (data['Close'] - data['Close'].rolling(window).min()) / \
-                 (data['Close'].rolling(window).max() - data['Close'].rolling(window).min())
-    return pricerange
-
-
-# %% Labeling: 1 for positive next day return, 0 for negative next day return
-def next_day_ret(df):
-    '''
-    Given a DataFrame with one column named 'Close' label each row according to
-    the next day's return. If it is positive, label is 1. If negative, label is 0
-    Designed to label a dataset used to train a ML model for trading
-    RETURNS
-    next_day_ret: pd.DataFrame
-    label: list
-    Implementation on df_pe:
-        _, label = next_day_ret(df_pe)
-        df_pe['Label'] = label
-    '''
-    next_day_ret = df.Open.pct_change().shift(-1)
-    label = []
-    for i in range(len(next_day_ret)):
-        if next_day_ret[i] > 0:
-            label.append(1)
-        else:
-            label.append(0)
-    return next_day_ret, label
-
-
-# %%
-# binary ,returns and accum returns
-
-def ret_div(df):
-    '''
-    Return a logarithm and arithmetic daily returns
-    and daily acum daily
-    '''
-    ret_ar = df.Close.pct_change().fillna(0)
-    ret_ar_acum = ret_ar.cumsum()
-    ret_log = np.log(1 + ret_ar_acum).diff()
-    ret_log_acum = ret_log.cumsum()
-
-    binary = ret_ar
-    binary[binary < 0] = 0
-    binary[binary > 0] = 1
-    return ret_ar, ret_ar_acum, ret_log, ret_log_acum, binary
-
-
-# zscore normalization
-
-
-def z_score(df):
-    # zscore
-    mean, std = df.Close.mean(), df.Close.std()
-    zscore = (df.Close - mean) / std
-
-    return zscore
-
-
-# diff integer
-def int_diff(df, window: np.arange):
-    diff = [
-        df.Close.diff(x) for x in window
-    ]
-    return diff
-
-
-# moving averages
-def mov_averages(df, space: np.arange):
-    mov_av = [
-        df.Close.rolling(w).mean() for w in space
-    ]
-    return mov_av
-
-
-def quartiles(df, n_bins: int):
-    'Assign quartiles to data, depending of position'
-    bin_fxn = pd.qcut(df.Close, q=n_bins, labels=range(1, n_bins + 1))
-    return bin_fxn
-
-
-def add_all_features(datos_divisa):
-    # Technical Indicators
-    datos_divisa['CCI'] = CCI(datos_divisa, 14)  # Add CCI
-    datos_divisa['SMA_5'] = SMA(datos_divisa, 5)
-    datos_divisa['SMA_10'] = SMA(datos_divisa, 10)
-    datos_divisa['MACD'] = datos_divisa['SMA_10'] - datos_divisa['SMA_5']
-    datos_divisa['Upper_BB'], datos_divisa['Lower_BB'] = BBANDS(datos_divisa, 10)
-    datos_divisa['Range_BB'] = (datos_divisa['Close'] - datos_divisa['Lower_BB']) / (
-            datos_divisa['Upper_BB'] - datos_divisa['Lower_BB'])
-    datos_divisa['RSI'] = RSI(datos_divisa, 10)
-    datos_divisa['Max_range'] = price_from_max(datos_divisa, 20)
-    datos_divisa['Min_range'] = price_from_min(datos_divisa, 20)
-    datos_divisa['Price_Range'] = price_range(datos_divisa, 50)
-    datos_divisa['returna'], datos_divisa['returna_acums'], datos_divisa['returnlog'], datos_divisa['returnlog_acum'], \
-    datos_divisa['binary'] = ret_div(datos_divisa)
-    datos_divisa['zscore'] = z_score(datos_divisa)
-    datos_divisa['diff1'], datos_divisa['diff2'], datos_divisa['diff3'], datos_divisa['diff4'], datos_divisa[
-        'diff5'] = int_diff(datos_divisa, np.arange(1, 6))
-    datos_divisa['mova1'], datos_divisa['movaf2'], datos_divisa['mova3'], datos_divisa['mova4'], datos_divisa[
-        'mova5'] = mov_averages(datos_divisa, np.arange(1, 6))
-    datos_divisa['quartiles'] = quartiles(datos_divisa, 10)
-    datos_divisa['Label'] = next_day_ret(datos_divisa)[1]
-    return datos_divisa.iloc[1:]
-
 # -------------------------------- MODEL: Multivariate Linear Regression Models with L1L2 regularization -- #
 # --------------------------------------------------------------------------------------------------------- #
 
@@ -525,8 +411,10 @@ def symbolic_features(p_x, p_y):
                                 verbose=1, random_state=None, n_jobs=-1, feature_names=p_x.columns,
                                 warm_start=True)
 
-    model_fit = model.fit_transform(p_x, p_y)
+    init = model.fit_transform(p_x[:'01-01-2019'], p_y[:'01-01-2019'])
     model_params = model.get_params()
+    gp_features = model.transform(p_x)
+    model_fit = np.hstack((p_x, gp_features))
     results = {'fit': model_fit, 'params': model_params, 'model': model}
 
     return results
@@ -569,26 +457,32 @@ def f_features(p_data, p_nmax):
             data['had_' + 'lag_oi_' + str(n + 1) + '_' + 'ma_ol_' + str(n + 2)] = x * data['ma_ol_' + str(n + 2)]
             data['had_' + 'lag_oi_' + str(n + 1) + '_' + 'ma_ho_' + str(n + 2)] = x * data['ma_ho_' + str(n + 2)]
             data['had_' + 'lag_oi_' + str(n + 1) + '_' + 'ma_hl_' + str(n + 2)] = x * data['ma_hl_' + str(n + 2)]
-    data = data.dropna(axis='rows')
-    data = data.drop(['Open', 'High', 'Low', 'Close'], axis=1)
     picos = check_seasonal(p_data)
     t = np.arange(1, len(data) + 1)
     data["t"] = t
+    # data['RSI'] = RSI(p_data, 10)
+    # data['CCI'] = CCI(p_data, 14)  # Add CCI
+    # data['SMA_5'] = SMA(p_data, 5)
+    # data['SMA_10'] = SMA(p_data, 10)
+    # data['MACD'] = data['SMA_10'] - data['SMA_5']
+    # data['Upper_BB'], data['Lower_BB'] = BBANDS(p_data, 10)
+    # data['Range_BB'] = (data['Close'] - data['Lower_BB']) / (data['Upper_BB'] - data['Lower_BB'])
     for i in picos.periods:
         data[f"{i:.2f}_sen"] = np.abs(np.sin(((2 * np.pi) / i) * t))
         data[f"{i:.2f}_cos"] = np.abs(np.cos(((2 * np.pi) / i) * t))
+    data = data.drop(['Open', 'High', 'Low', 'Close'], axis=1)
+    data = data.dropna(axis='rows')
     return data
 
 
-def recursivo(variables, modelo):
-    predict_ridge = pd.DataFrame(index=variables.index[931:], columns=["predicted","real"])
-    predict_ridge["real"]=variables.iloc[:, 0]['01-01-2019':]
+def recursivo(variables, real, modelo):
+    predict_ridge = pd.DataFrame(index=variables.index[931:], columns=["predicted", "real"])
+    predict_ridge["real"] = real.iloc[:, 0]['01-01-2019':]
     for period in range(0, len(variables['01-01-2019':])):
         xtrain = variables.iloc[:len(variables[:'01-01-2019'])+period, 1:]
         xtest = variables.iloc[len(variables['01-01-2019'])+period:len(variables['01-01-2019'])+period+1, 1:]
-        ytrain = variables.iloc[:len(variables[:'01-01-2019'])+period, 0]
-        ridgereg = Ridge(normalize=True)
-        model = ridgereg.fit(xtrain, ytrain)
+        ytrain = real.iloc[:len(real[:'01-01-2019'])+period, 0]
+        model = modelo.fit(xtrain, ytrain)
         y_p_ridge = model.predict(xtest)
         predict_ridge.iloc[period, 0] = float(y_p_ridge)
     return predict_ridge
