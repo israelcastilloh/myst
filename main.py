@@ -33,12 +33,12 @@ test = datos_divisa['01-01-2019':]
 Aspectos estadisticos de la serie de tiempo
 '''
 
-# ciclos = ft.check_seasonal(train)  # Matriz que muestra los ciclos que se repiten
+ciclos = ft.check_seasonal(train)  # Matriz que muestra los ciclos que se repiten
 # Obtener la gráfica de atípicos
 # Calcular los valores necesarios para el análisis estadístico
-estacionaridad, autocorrelacion, normalidad, seasonal = ft.get_statistics(train)
+estacionaridad, autocorrelacion, normalidad, seasonal, atipicos = ft.get_statistics(train)
 # Obtener DataFrame con resultados
-estadisticos = ft.get_dfestadisticos(estacionaridad, autocorrelacion, normalidad, seasonal)
+estadisticos = ft.get_dfestadisticos(estacionaridad, autocorrelacion, normalidad, seasonal, atipicos)
 
 # -- ---------------------------------------------------------------------------------------------------------------- #
 '''--------------------------------------------------------------
@@ -72,16 +72,6 @@ Backtest
 '''
 backtest = ft.backtest(prediccion, datos_divisa)
 
-
-# dataframe con
-# "real" (dato real que quiero pronosticar), y con el que voy a cerrar posición
-# "predicción" (dato pronosticado 4 horas después con ridge) (para generar decisión)
-# close de datos_divisa, seria al precio al que se va a comprar o vender
-# (los indices ya están ajustados para no tener que moverlos, el predict y real están uno adelante en el tiempo)
-# cantidad de dinero ivertido (1% del que tenía)
-# "decisión (por ejemplo si mi pronóstico es mayor a dos desviaciones estandar del dato pronosticado anterior", un "compra, venta o nada",
-# "ganancias en cada momento, inciiando con 100,000 usd
-# ganancias.acum()
 # -- ---------------------------------------------------------------------------------------------------------------- #
 '''--------------------------------------------------------------
 Metricas de atribucion al desempeño

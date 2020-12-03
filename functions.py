@@ -174,6 +174,18 @@ def check_noramlity(param_data):
 
 
 def check_seasonal(data):
+    """
+    Funcion que verifica si los datos de una serie presentan cierta estacionalidad.
+    Parameters
+    ---------
+    data: DataFrame: DataFrame que contiene la serie de datos de la divisa seleccionada.
+    Returns
+    ---------
+    matrix: DataFrame: df que contiene los datos de los periodos en los que se encuentra cierta repeticion.
+    Debuggin
+    ---------
+    ciclos = ft.check_seasonal(train)
+    """
     f, pxx_den = signal.periodogram(data['Open'], 1)
     top_50_periods = {}
     # get indices for 3 highest Pxx values
@@ -218,6 +230,22 @@ def check_hetero(param_data):
 
 
 def get_statistics(data):
+    """
+    Funcion que calcula todas las pruebas estadisticas y otorga cierto valor cualitativo a los resultados
+    Parameters
+    ---------
+    data: DataFrame: DataFrame que contiene la serie de datos de la divisa seleccionada.
+    Returns
+    ---------
+    estacionaridad: str: indica si hay o no estacionairdad en la serie
+    autocorrelacion: str: indica si hay o no rezagos significativos en la serie
+    normalidad: str: indica si hay o no normalidad en la serie
+    seasonal: str: indica si hay o no estacionalidad en la serie
+    atipicos: str: indica si hay datos atipicos o no en la serie
+    Debuggin
+    ---------
+    estacionaridad, autocorrelacion, normalidad, seasonal, atipicos = ft.get_statistics(train)
+    """
     # Verificar estacionaridad
     stationary_series, lags = check_stationarity(data)
     if lags != 0:
@@ -238,24 +266,43 @@ def get_statistics(data):
         normalidad = 'Los datos no son normales'
     # Verificar si la serie es ciclica
     seasonal = 'Sí'
-    return estacionaridad, autocorrelacion, normalidad, seasonal
+    atipicos = 'No'
+    return estacionaridad, autocorrelacion, normalidad, seasonal, atipicos
 
 
 # -- ---------------------------------------------------------------------------------------------------------------- #
 # Visualizacion de datos de los aspectos estadisticos
 
 
-def get_dfestadisticos(valor1, valor2, valor3, valor4):
+def get_dfestadisticos(valor1, valor2, valor3, valor4, valor5):
+    """
+    Funcion que crea un dataframe de los resultados estadisticos
+    Parameters
+    ---------
+    valor1: str: indica si hay o no estacionairdad en la serie
+    valor2: str: indica si hay o no rezagos significativos en la serie
+    valor3: str: indica si hay o no normalidad en la serie
+    valor4: str: indica si hay o no estacionalidad en la serie
+    valor5: str: indica si hay datos atipicos o no en la serie
+    Returns
+    ---------
+    tabla: Dataframe: df que contiene los valores cualitativos de resultados estadisticos.
+    Debuggin
+    ---------
+    check_hetero(datos_divisa)
+    """
     lista1 = [valor1]
     lista2 = [valor2]
     lista3 = [valor3]
     lista4 = [valor4]
+    lista5 = [valor5]
     tabla = pd.DataFrame(columns=['Estacionaridad', 'Autocorrelacion y Autocorrelacion parcial',
-                                  'Prueba de normalidad', 'Estacionalidad'])
+                                  'Prueba de normalidad', 'Estacionalidad', 'Valores Atipicos'])
     tabla['Estacionaridad'] = lista1
     tabla['Autocorrelacion y Autocorrelacion parcial'] = lista2
     tabla['Prueba de normalidad'] = lista3
     tabla['Estacionalidad'] = lista4
+    tabla['Valores Atipicos'] = lista5
     return tabla
 
 
@@ -476,6 +523,20 @@ def f_features(p_data, p_nmax):
 
 
 def recursivo(variables, real, modelo):
+    """
+    Funcion que hace la prediccion de los datos con el modelo seleccionado
+    Parameters
+    ---------
+    variables:
+    real:
+    modelo:
+    Returns
+    ---------
+    predict_ridge:
+    Debuggin
+    ---------
+    prediccion = ft.recursivo(nuevos_features, features_divisa, lm_model_s["ridge"]["model"])
+    """
     predict_ridge = pd.DataFrame(index=variables.index[931:], columns=["predicted", "real"])
     predict_ridge["real"] = real.iloc[:, 0]['01-01-2019':]
     for period in range(0, len(variables['01-01-2019':])):
@@ -493,6 +554,19 @@ pd.set_option('display.float_format', '{:.2f}'.format)
 
 
 def backtest(prediccion, historicos):
+    """
+    Funcion que realiza el backtest del modelo aplicado a trading
+    Parameters
+    ---------
+    prediccion: DataFrame: df que contiene la prediccion con el modelo seleccionado
+    historicos: DataFrame: df que contiene los datos historicos de la divisa
+    Returns
+    ---------
+    Backtest_df: DataFrame: df que contiene los resultados de trading y sus decisiones
+    Debuggin
+    ---------
+    backtest = ft.backtest(prediccion, datos_divisa)
+    """
     capital_total = 100_000
     monto_operacion = capital_total*.01
 
@@ -522,6 +596,18 @@ def backtest(prediccion, historicos):
 # Calcular residuos de nuestro modelo
 
 def get_residuos(datos):
+    """
+     Funcion que calcula los residuos del modelo
+     Parameters
+     ---------
+    datos: DataFrame: df que contiene los datos de prediccion y reales
+     Returns
+     ---------
+    residuos: list: lista que contiene los residuos del modelo.
+     Debuggin
+     ---------
+    residuos = ft.get_residuos(backtest)
+     """
     residuos = datos['real'] - datos['predicted']
     return residuos
 
