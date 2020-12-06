@@ -13,7 +13,17 @@ Or you can manually install one by one using the name and version in the file.
 
 ## Funcionalities
 
-*Add here examples of core functionalities for the project in this repository.*
+    datos_divisa = read_pkl('USD_MXN')
+Descarga de datos USD_MXN
+
+    estadisticos = ft.get_dfestadisticos(estacionaridad, autocorrelacion, normalidad, seasonal, atipicos)
+Dataframe con información estadística general de los datos de entrenamiento
+
+    lm_model = ft.mult_reg(p_x,p_y)}
+Creación de modelo con las variables que se tengan, modelo de regresión lineal comparado a lineal con regularizaciones lasso, ridge y elastcnet
+
+    backtest = ft.backtest(prediccion, datos_divisa)
+Modelo en datos de prueba en una simulado ejercicio de trading
 
 ## Author
 Araceli Castillo Fuhr. ING. FINANCIERO

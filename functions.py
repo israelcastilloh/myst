@@ -352,7 +352,7 @@ def RSI(data, window):
     RS1 = roll_up1 / roll_down1
     return 100.0 - (100.0 / (1.0 + RS1))
 
-# -------------------------------- MODEL: Multivariate Linear Regression Models with L1L2 regularization -- #
+# ------------------------------------- MODEL: Multivariate Linear Regression Models with regularization -- #
 # --------------------------------------------------------------------------------------------------------- #
 
 def mult_reg(p_x, p_y):
@@ -438,7 +438,6 @@ def symbolic_features(p_x, p_y):
     ----------
     p_x: pd.DataFrame
         with regressors or predictor variables
-        p_x = data_features.iloc[0:30, 3:]
 
     p_y: pd.DataFrame with variable to predict
 
@@ -578,7 +577,7 @@ def backtest(prediccion, historicos):
     backtest_df['p_l'] = 0.0000
 
     for p in range(len(backtest_df.predicted)-1):
-        if backtest_df.predicted[p] < backtest_df.Close[p]:
+        if backtest_df.predicted[p] < (backtest_df.Close[p]):
             ########################################################
             backtest_df.event[p] = 'sell'
             backtest_df.p_apertura[p] = backtest_df.Open[p]
@@ -714,7 +713,7 @@ def f_estadisticas_mad(param_data, param=False):
       f_estadisticas_mad(data_nueva2)
       """
     # Calculo del Sharpe
-    rf = .05 / 300
+    rf = .024 / 252
     daily_closes = param_data['cap']
     daily_logret = np.log(daily_closes / daily_closes.shift()).dropna()
     media = np.mean(daily_logret)
