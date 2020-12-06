@@ -16,7 +16,7 @@ import numpy as np
 import plotly.express as px
 from data import *
 import plotly.graph_objects as go
-
+import seaborn as sns
 # -- ---------------------------------------------------------------------------------------------------------------- #
 '''--------------------------------------------------------------
 Datos históricos de divisa
@@ -104,3 +104,18 @@ def get_chart_drawdown_drawup(param: False, lista, datos):
                                  mode='lines', name='Drawdup', line=dict(color="LightSeaGreen", width=4, dash="dashdot",)))
         fig.update_layout(title="Drawdown y Drawup", xaxis_title="Fechas", yaxis_title="Profit acumulado")
         return fig.show()
+
+
+def heatmap_corr(df):
+    '''
+    :param df: dataframe contains all the transformations and predictions
+    :return: graph
+    '''
+    plt.figure(figsize=(16, 8))
+
+    #set the limits
+    heatmap = sns.heatmap(df.corr(), cmap="YlGnBu", vmin=-1, vmax=1,annot=False)
+
+    ht = heatmap.set_title('Mapa de calor de correlaciones', fontdict={'fontsize': 12}, pad=12);
+
+    return ht
